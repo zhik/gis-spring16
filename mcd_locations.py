@@ -12,6 +12,7 @@ with open('zipcodes.txt', 'r') as f:
 print "there are", len(zipcodes), "zipcodes"
 
 browser = webdriver.Chrome('chromedriver.exe')
+# # pulls all the zipcodes in nyc
 # url = 'http://www.nycbynatives.com/nyc_info/new_york_city_zip_codes.php'
 # browser.get(url)
 # time.sleep(.1)
@@ -28,17 +29,20 @@ browser = webdriver.Chrome('chromedriver.exe')
 # 	for zipcode in zipcodes:
 # 		f.write(zipcode + " ")
 
-
+ziplen = len(zipcodes)
 #find stores with those zipcodes
 count = 0
 for zipcode in zipcodes:
 	url = 'https://rl.mcdonalds.com/googleapps/GoogleSearchUSAction.do?method=googlesearchLocation&primaryCity='\
 	+ zipcode +'&postalCode=&country=us&language=en'
 	browser.get(url)
-	time.sleep(1)
+	time.sleep(.8)
 	try:	
 		for number in ('1','2','3','4','5'):
-			storename = browser.find_element_by_xpath('//*[@id="results"]/table/tbody['+number+']/tr/td[2]/h3').text
+			storenameb = browser.find_element_by_xpath('//*[@id="results"]/table/tbody['+number+']/tr/td[2]').text
+			if storenameb.find('@') != 0:
+				storenameb = storenameb.replace('@', ' ')
+			storename = storenameb[:storenameb.find("(",20)].replace('\n', ' ')
 			storetype = browser.find_element_by_xpath('//*[@id="results"]/table/tbody['+number+']/tr/td[4]').text
 			if browser.find_elements_by_xpath('//*[@id="results"]/table/tbody['+number+']/tr/td[5]/div') != []:
 				storeplay = True
@@ -48,17 +52,18 @@ for zipcode in zipcodes:
 				storedrive = True
 			else:
 				storedrive = False
-			storelatlng = geocoder.arcgis(storename+" New York").latlng
+			storelatlng = geocoder.arcgis(storename).latlng
 			storefull = [storename.encode("utf-8"), storetype.encode("utf-8"), storeplay, storedrive, storelatlng]
 			if storefull not in store_list:
 				store_list.append(storefull)
 				if storelatlng == []:
-					print "lat-long for", storename, "is not found"
-		count += 1
+					print "lat-long for", storefull[0] , "is not found"
 	except:
-		print zipcode, "error!, no such thing :", str(count)
+		count += 1
+		print zipcode, "error!, no such thing :", str(count) ,"out of", str(ziplen)
 	else:
-		print zipcode, "is done :", str(count)
+		count += 1
+		print zipcode, "is done :", str(count) ,"out of", str(ziplen)
 
 browser.close()
 
