@@ -1,0 +1,6 @@
+click==6.6
+geocoder==1.13.0
+ratelim==0.1.6
+requests==2.10.0
+selenium==2.53.2
+six==1.10.0
